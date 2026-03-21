@@ -33,13 +33,14 @@ const schema = {
 export class DrizzleService implements OnModuleDestroy {
   private readonly pool: Pool;
   public readonly db;
+  private readonly schema = { ...studentSchema, ...teacherSchema };
 
   constructor() {
     this.pool = new Pool({
       connectionString: process.env.DATABASE_URL,
     });
-
-    this.db = drizzle(this.pool, { schema });
+    
+    this.db = drizzle(this.pool, {schema: this.schema});
   }
 
   async onModuleDestroy() {

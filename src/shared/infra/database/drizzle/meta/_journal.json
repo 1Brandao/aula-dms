@@ -15,6 +15,13 @@
       "when": 1773436800000,
       "tag": "0001_seed_data",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1773621321094,
+      "tag": "0001_strange_grandmaster",
+      "breakpoints": true
     }
   ]
 }

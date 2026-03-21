@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "DMS: Generate Module",
+      "type": "shell",
+      "command": "bash scripts/generate-module.sh ${input:modulePath} ${input:entityName}",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "modulePath",
+      "type": "promptString",
+      "description": "Caminho do módulo (ex: academic/teachers)"
+    },
+    {
+      "id": "entityName",
+      "type": "promptString",
+      "description": "Nome da entidade em minúsculo singular (ex: teacher)"
+    }
+  ]
+}
