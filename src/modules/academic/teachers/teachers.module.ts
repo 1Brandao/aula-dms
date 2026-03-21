@@ -1,28 +1,20 @@
-import { Module } from '@nestjs/common';
-import { CreateTeacherService } from './application/services/create-teacher.service';
-import { TeachersController } from './infra/controllers/teachers.controller';
-import { RemoveTeacherService } from './application/services/remove-teacher.service';
-import { ReturnTeacherService } from './application/services/return-teacher.service';
-import { DatabaseModule } from '@infra/database/database.module';
-import { EditTeacherService } from './application/services/edit-teacher.service';
-import { ListTeachersService } from './application/services/list-teacher.service';
-import { DrizzleTeacherRepository } from './infra/repositories/drizzle-teacher.repository';
-import { TEACHER_REPOSITORY } from './domain/repositories/teacher-repository.interface';
+import { TeacherService } from "@academic/teachers/application/services/teacher.service";
+import { TEACHER_REPOSITORY } from "@academic/teachers/domain/repositories/teacher-repository.interface";
+import { TeachersController } from "@academic/teachers/infra/controllers/teachers.controller";
+import { DrizzleTeacherRepository } from "@academic/teachers/infra/repositories/drizzle-teacher.repository";
+import { Module } from "@nestjs/common";
+import { SharedModule } from "@shared/shared.module";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [SharedModule],
   controllers: [TeachersController],
   providers: [
-    CreateTeacherService,
-    EditTeacherService,
-    RemoveTeacherService,
-    ListTeachersService,
-    ReturnTeacherService,
+    TeacherService,
     DrizzleTeacherRepository,
     {
       provide: TEACHER_REPOSITORY,
       useExisting: DrizzleTeacherRepository,
-    }
+    },
   ],
 })
 export class TeachersModule {}

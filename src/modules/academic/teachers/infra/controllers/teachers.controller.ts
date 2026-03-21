@@ -1,46 +1,41 @@
-import { TeacherDto } from '@academic/teachers/application/dto/teacher.dto';
-import { CreateTeacherService } from '@academic/teachers/application/services/create-teacher.service';
-import { EditTeacherService } from '@academic/teachers/application/services/edit-teacher.service';
-import { ListTeachersService } from '@academic/teachers/application/services/list-teacher.service';
-import { RemoveTeacherService } from '@academic/teachers/application/services/remove-teacher.service';
-import { ReturnTeacherService } from '@academic/teachers/application/services/return-teacher.service';
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { TeacherDto } from "@academic/teachers/application/dto/teacher.dto";
+import { TeacherService } from "@academic/teachers/application/services/teacher.service";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from "@nestjs/common";
 
-
-
-@Controller('teachers')
+@Controller("teachers")
 export class TeachersController {
-  constructor (
-    private readonly createTeacherService: CreateTeacherService,
-    private readonly editTeacherService: EditTeacherService,
-    private readonly removeTeacherService: RemoveTeacherService,
-    private readonly listTeachersService: ListTeachersService,
-    private readonly returnTeacherService: ReturnTeacherService,
-  ) {}
+  constructor(private readonly teacherService: TeacherService) {}
 
   @Get()
   async findAll() {
-    return this.listTeachersService.execute();
+    return this.teacherService.list();
   }
 
   @Get(":id")
   async findById(@Param("id") id: string) {
-    return this.returnTeacherService.executeById(id);
+    return this.teacherService.findById(id);
   }
 
   @Post()
   async create(@Body() body: TeacherDto) {
-    return this.createTeacherService.execute(body);
+    return this.teacherService.create(body);
   }
 
   @Put(":id")
   async update(@Param("id") id: string, @Body() body: TeacherDto) {
-    return this.editTeacherService.execute(id, body);
+    return this.teacherService.edit(id, body);
   }
 
   @Delete(":id")
-  async delete(@Param("id") id: string) {
-    return this.removeTeacherService.execute(id);
+  async remove(@Param("id") id: string) {
+    return this.teacherService.remove(id);
   }
-
 }
