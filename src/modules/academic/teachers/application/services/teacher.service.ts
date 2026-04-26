@@ -5,6 +5,7 @@ import {
   type TeacherRepository,
 } from "@academic/teachers/domain/repositories/teacher-repository.interface";
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -18,6 +19,25 @@ export class TeacherService {
     private readonly teacherRepository: TeacherRepository,
   ) {}
 
+  private toDate(value: unknown): Date {
+    if (value instanceof Date) {
+      if (Number.isNaN(value.getTime())) {
+        throw new BadRequestException("Invalid admissionDate");
+      }
+      return value;
+    }
+
+    if (typeof value === "string") {
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        throw new BadRequestException("Invalid admissionDate");
+      }
+      return parsed;
+    }
+
+    throw new BadRequestException("Invalid admissionDate");
+  }
+
   async create(dto: TeacherDto): Promise<void> {
     const existing = await this.teacherRepository.findByEmail(dto.email);
 
@@ -25,7 +45,10 @@ export class TeacherService {
       throw new ConflictException("Email already registered");
     }
 
-    const teacher = Teacher.restore(dto);
+    const teacher = Teacher.restore({
+      ...dto,
+      admissionDate: this.toDate(dto.admissionDate),
+    });
     await this.teacherRepository.create(teacher!);
   }
 
@@ -50,7 +73,7 @@ export class TeacherService {
       .withDocument(dto.document)
       .withDegree(dto.degree)
       .withSpecialization(dto.specialization)
-      .withAdmissionDate(dto.admissionDate);
+      .withAdmissionDate(this.toDate(dto.admissionDate));
 
     await this.teacherRepository.update(teacher);
   }
@@ -61,16 +84,16 @@ export class TeacherService {
 
   async list(): Promise<TeacherDto[]> {
     const response = await this.teacherRepository.findAll();
-    return response.map((row) => TeacherDto.from(row)!);
+    return response.map((row) => TeacherDto.fromTeacher(row)!);
   }
 
   async findById(id: string): Promise<TeacherDto | null> {
     const response = await this.teacherRepository.findById(id);
-    return TeacherDto.from(response);
+    return TeacherDto.fromTeacher(response);
   }
 
   async findByEmail(email: string): Promise<TeacherDto | null> {
     const response = await this.teacherRepository.findByEmail(email);
-    return TeacherDto.from(response);
+    return TeacherDto.fromTeacher(response);
   }
 }
