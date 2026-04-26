@@ -10,7 +10,7 @@ export class TeacherDto {
     public admissionDate: Date,
   ) {}
 
-  public static from(teacher: Teacher | null): TeacherDto | null {
+  public static fromTeacher(teacher: Teacher | null): TeacherDto | null {
     if (!teacher) return null;
     return new TeacherDto(
       teacher.name,
