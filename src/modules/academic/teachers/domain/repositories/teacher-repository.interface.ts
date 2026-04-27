@@ -6,7 +6,7 @@ export interface TeacherRepository {
   create(teacher: Teacher): Promise<void>;
   update(teacher: Teacher): Promise<void>;
   delete(id: string): Promise<void>;
-  findAll(): Promise<Teacher[]>;
+  findAll(params: { page: number; limit: number }): Promise<{ data: Teacher[]; total: number }>;
   findById(id: string): Promise<Teacher | null>;
   findByEmail(email: string): Promise<Teacher | null>;
 }

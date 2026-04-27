@@ -12,8 +12,8 @@ export class ListTeachersService {
     private readonly teacherRepository: TeacherRepository,
   ) {}
 
-  async execute(): Promise<TeacherDto[]> {
-    const response = await this.teacherRepository.findAll();
-    return response.map((row) => TeacherDto.fromTeacher(row)!);
+  async execute(params: { page: number; limit: number }): Promise<TeacherDto[]> {
+    const { data } = await this.teacherRepository.findAll(params);
+    return data.map((row) => TeacherDto.fromTeacher(row)!);
   }
 }

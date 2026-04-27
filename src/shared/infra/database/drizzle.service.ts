@@ -1,4 +1,4 @@
-import * as schema from "@academic/teachers/infra/schemas/teacher.schema";
+import * as schema from "@academic/teachers/infra/database/schemas/teacher.schema";
 import { Injectable, type OnModuleDestroy } from "@nestjs/common";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
