@@ -1,9 +1,9 @@
 import { Teacher } from "@academic/teachers/domain/models/teacher.entity";
 import type { TeacherRepository } from "@academic/teachers/domain/repositories/teacher-repository.interface";
-import { teachersSchema } from "@academic/teachers/infra/schemas/teacher.schema";
+import { teachersSchema } from "@academic/teachers/infra/database/schemas/teacher.schema";
 import { Injectable } from "@nestjs/common";
 import { DrizzleService } from "@shared/infra/database/drizzle.service";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 @Injectable()
 export class DrizzleTeacherRepository implements TeacherRepository {
@@ -63,8 +63,24 @@ export class DrizzleTeacherRepository implements TeacherRepository {
     return Teacher.restore(result[0]);
   }
 
-  async findAll(): Promise<Teacher[]> {
-    const rows = await this.drizzleService.db.select().from(teachersSchema);
-    return rows.map((row) => Teacher.restore(row)!);
+  async findAll(params: { page: number; limit: number }): Promise<{ data: Teacher[]; total: number }> {
+    const { page, limit } = params;
+    const offset = (page - 1) * limit;
+
+    const [rows, [{ value: total }]] = await Promise.all([
+      this.drizzleService.db
+        .select()
+        .from(teachersSchema)
+        .limit(limit)
+        .offset(offset),
+      this.drizzleService.db
+        .select({ value: count() })
+        .from(teachersSchema),
+    ]);
+
+    return {
+      data: rows.map((row) => Teacher.restore(row)!),
+      total: Number(total),
+    };
   }
 }

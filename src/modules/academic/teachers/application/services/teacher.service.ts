@@ -1,16 +1,20 @@
-import { TeacherDto } from "@academic/teachers/application/dto/teacher.dto";
+import {
+  CreateTeacherDto,
+  TeacherDto,
+  UpdateTeacherDto,
+} from "@academic/teachers/application/dto/teacher.dto";
 import { Teacher } from "@academic/teachers/domain/models/teacher.entity";
 import {
   TEACHER_REPOSITORY,
   type TeacherRepository,
 } from "@academic/teachers/domain/repositories/teacher-repository.interface";
 import {
-  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
+import type { PaginatedResult } from "@shared/infra/hateoas";
 
 @Injectable()
 export class TeacherService {
@@ -19,40 +23,18 @@ export class TeacherService {
     private readonly teacherRepository: TeacherRepository,
   ) {}
 
-  private toDate(value: unknown): Date {
-    if (value instanceof Date) {
-      if (Number.isNaN(value.getTime())) {
-        throw new BadRequestException("Invalid admissionDate");
-      }
-      return value;
-    }
-
-    if (typeof value === "string") {
-      const parsed = new Date(value);
-      if (Number.isNaN(parsed.getTime())) {
-        throw new BadRequestException("Invalid admissionDate");
-      }
-      return parsed;
-    }
-
-    throw new BadRequestException("Invalid admissionDate");
-  }
-
-  async create(dto: TeacherDto): Promise<void> {
+  async create(dto: CreateTeacherDto): Promise<void> {
     const existing = await this.teacherRepository.findByEmail(dto.email);
 
     if (existing) {
       throw new ConflictException("Email already registered");
     }
 
-    const teacher = Teacher.restore({
-      ...dto,
-      admissionDate: this.toDate(dto.admissionDate),
-    });
+    const teacher = Teacher.restore({ ...dto });
     await this.teacherRepository.create(teacher!);
   }
 
-  async edit(id: string, dto: TeacherDto): Promise<void> {
+  async edit(id: string, dto: UpdateTeacherDto): Promise<void> {
     const teacher = await this.teacherRepository.findById(id);
 
     if (!teacher) {
@@ -67,13 +49,12 @@ export class TeacherService {
       }
     }
 
-    teacher
-      .withName(dto.name)
-      .withEmail(dto.email)
-      .withDocument(dto.document)
-      .withDegree(dto.degree)
-      .withSpecialization(dto.specialization)
-      .withAdmissionDate(this.toDate(dto.admissionDate));
+    if (dto.name !== undefined) teacher.withName(dto.name);
+    if (dto.email !== undefined) teacher.withEmail(dto.email);
+    if (dto.document !== undefined) teacher.withDocument(dto.document);
+    if (dto.degree !== undefined) teacher.withDegree(dto.degree);
+    if (dto.specialization !== undefined) teacher.withSpecialization(dto.specialization);
+    if (dto.admissionDate !== undefined) teacher.withAdmissionDate(dto.admissionDate);
 
     await this.teacherRepository.update(teacher);
   }
@@ -82,9 +63,14 @@ export class TeacherService {
     await this.teacherRepository.delete(id);
   }
 
-  async list(): Promise<TeacherDto[]> {
-    const response = await this.teacherRepository.findAll();
-    return response.map((row) => TeacherDto.fromTeacher(row)!);
+  async list(params: { page: number; limit: number }): Promise<PaginatedResult<TeacherDto>> {
+    const { data, total } = await this.teacherRepository.findAll(params);
+    return {
+      data: data.map((row) => TeacherDto.fromTeacher(row)!),
+      total,
+      page: params.page,
+      limit: params.limit,
+    };
   }
 
   async findById(id: string): Promise<TeacherDto | null> {
