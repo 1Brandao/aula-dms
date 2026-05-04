@@ -4,6 +4,7 @@ import {
   TEACHER_REPOSITORY,
   type TeacherRepository,
 } from "@academic/teachers/domain/repositories/teacher-repository.interface";
+import { TeacherEventsPublisher } from "@academic/teachers/infra/messaging/teacher-events.publisher";
 import {
   BadRequestException,
   ConflictException,
@@ -17,6 +18,7 @@ export class TeacherService {
   constructor(
     @Inject(TEACHER_REPOSITORY)
     private readonly teacherRepository: TeacherRepository,
+    private readonly teacherEventsPublisher: TeacherEventsPublisher,
   ) {}
 
   private toDate(value: unknown): Date {
@@ -50,6 +52,17 @@ export class TeacherService {
       admissionDate: this.toDate(dto.admissionDate),
     });
     await this.teacherRepository.create(teacher!);
+
+    const persisted = await this.teacherRepository.findByEmail(dto.email);
+    await this.teacherEventsPublisher.publishCreated({
+      id: persisted?.id,
+      name: persisted?.name,
+      email: persisted?.email,
+      document: persisted?.document,
+      degree: persisted?.degree,
+      specialization: persisted?.specialization,
+      admissionDate: persisted?.admissionDate,
+    });
   }
 
   async edit(id: string, dto: TeacherDto): Promise<void> {
@@ -76,10 +89,21 @@ export class TeacherService {
       .withAdmissionDate(this.toDate(dto.admissionDate));
 
     await this.teacherRepository.update(teacher);
+
+    await this.teacherEventsPublisher.publishUpdated({
+      id: teacher.id,
+      name: teacher.name,
+      email: teacher.email,
+      document: teacher.document,
+      degree: teacher.degree,
+      specialization: teacher.specialization,
+      admissionDate: teacher.admissionDate,
+    });
   }
 
   async remove(id: string): Promise<void> {
     await this.teacherRepository.delete(id);
+    await this.teacherEventsPublisher.publishDeleted(id);
   }
 
   async list(): Promise<TeacherDto[]> {

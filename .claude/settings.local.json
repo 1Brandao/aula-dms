@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx nest *)",
+      "Bash(rm -f src/modules/messaging/infra/controllers/messaging.controller.ts src/modules/messaging/application/dto/publish-message.dto.ts src/modules/messaging/application/dto/consumed-message.dto.ts)",
+      "Bash(rmdir src/modules/messaging/infra/controllers src/modules/messaging/application/dto)",
+      "Bash(docker-compose up *)",
+      "Bash(docker-compose ps *)",
+      "Bash(npm run *)",
+      "Bash(pkill -f \"nest start\")",
+      "Bash(taskkill /IM node.exe /F)",
+      "Bash(PORT=3001 npm run start:dev)",
+      "Bash(curl http://localhost:3001/teachers)",
+      "Bash(curl *)"
+    ]
+  }
+}
